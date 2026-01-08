@@ -1,0 +1,111 @@
+# Deploy to Staging Environment
+# Triggers on push to staging branch (from feature/* merges)
+# Also triggers on push to feature/* branches for testing
+
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - staging
+      - 'feature/**'
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy to Staging
+    runs-on: ubuntu-latest
+    environment: staging
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Collect static files
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.staging
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+        run: python manage.py collectstatic --noinput
+      
+      - name: Run migrations
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.staging
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+        run: python manage.py migrate --noinput
+      
+      # ============================================
+      # DEPLOY STEP - Customize based on your hosting
+      # Examples for common platforms:
+      # ============================================
+      
+      # Option 1: Deploy to Railway
+      # - name: Deploy to Railway
+      #   uses: bervProject/railway-deploy@main
+      #   with:
+      #     railway_token: ${{ secrets.RAILWAY_TOKEN }}
+      #     service: aeternis-backend-staging
+      
+      # Option 2: Deploy to Heroku
+      # - name: Deploy to Heroku
+      #   uses: akhileshns/heroku-deploy@v3.12.14
+      #   with:
+      #     heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+      #     heroku_app_name: aeternis-api-staging
+      #     heroku_email: ${{ secrets.HEROKU_EMAIL }}
+      
+      # Option 3: Deploy to DigitalOcean App Platform
+      # - name: Deploy to DigitalOcean
+      #   uses: digitalocean/app_action@v1.1.5
+      #   with:
+      #     app_name: aeternis-backend-staging
+      #     token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      
+      # Option 4: Deploy via SSH
+      # - name: Deploy via SSH
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.STAGING_HOST }}
+      #     username: ${{ secrets.STAGING_USER }}
+      #     key: ${{ secrets.STAGING_SSH_KEY }}
+      #     script: |
+      #       cd /var/www/aeternis-api-staging
+      #       git pull origin staging
+      #       source venv/bin/activate
+      #       pip install -r requirements.txt
+      #       python manage.py migrate
+      #       python manage.py collectstatic --noinput
+      #       sudo systemctl restart aeternis-staging
+      
+      - name: Deployment placeholder
+        run: |
+          echo "🚀 Staging deployment step"
+          echo "Configure your deployment target in this workflow"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+      
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "✅ Staging deployment completed successfully!"
+          echo "Environment: staging"
+          echo "Branch: ${{ github.ref_name }}"

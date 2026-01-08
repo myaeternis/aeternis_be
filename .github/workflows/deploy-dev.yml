@@ -1,0 +1,64 @@
+# Deploy to Dev Environment
+# Triggers on push/merge to develop branch
+
+name: Deploy to Dev
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy to Dev
+    runs-on: ubuntu-latest
+    environment: dev
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Collect static files
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.dev
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+        run: python manage.py collectstatic --noinput
+      
+      - name: Run migrations
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.dev
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+        run: python manage.py migrate --noinput
+      
+      # Configure your deployment here (see deploy-staging.yml for examples)
+      - name: Deployment placeholder
+        run: |
+          echo "🔨 Dev deployment step"
+          echo "Configure your deployment target in this workflow"
+      
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "✅ Dev deployment completed successfully!"
+          echo "Environment: dev"
