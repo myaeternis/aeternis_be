@@ -26,6 +26,14 @@ DATABASES = {
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
+# CSRF - Trust localhost origins for API requests
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:5173',  # Vite default port
+    'http://127.0.0.1:5173',
+]
+
 # Frontend URL for redirects
 FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:3000')
 

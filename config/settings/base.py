@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'pricing',
     'orders',
     'payments',
+    'security',
 ]
 
 MIDDLEWARE = [
@@ -35,10 +36,12 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'security.middleware.DisableCSRFForAPI',  # Disable CSRF for API (we use request signing)
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'security.middleware.ApiSecurityMiddleware',  # API request signing validation
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -104,6 +107,32 @@ STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY', default='')
 STRIPE_PUBLISHABLE_KEY = config('STRIPE_PUBLISHABLE_KEY', default='')
 STRIPE_WEBHOOK_SECRET = config('STRIPE_WEBHOOK_SECRET', default='')
 
+# API Security Configuration
+# Secret key for signing challenge tokens (should be different from SECRET_KEY)
+# Note: This will use SECRET_KEY as fallback if API_SECURITY_SECRET is not set
+API_SECURITY_SECRET = config('API_SECURITY_SECRET', default='')
+# Challenge token expiry in seconds (default: 5 minutes)
+API_CHALLENGE_TOKEN_EXPIRY = config('API_CHALLENGE_TOKEN_EXPIRY', default=300, cast=int)
+# Timestamp tolerance in seconds (default: 60 seconds)
+API_REQUEST_TIMESTAMP_TOLERANCE = config('API_REQUEST_TIMESTAMP_TOLERANCE', default=60, cast=int)
+
+# CORS Configuration - Allow custom security headers
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'x-api-challenge-token',  # Custom security headers
+    'x-api-timestamp',
+    'x-api-nonce',
+    'x-api-signature',
+]
+
 # Logging
 LOGGING = {
     'version': 1,
@@ -134,6 +163,10 @@ LOGGING = {
             'level': 'DEBUG',
         },
         'orders': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+        'security': {
             'handlers': ['console'],
             'level': 'DEBUG',
         },

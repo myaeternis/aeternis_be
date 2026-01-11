@@ -37,6 +37,7 @@ urlpatterns = [
     path('api/', api_root, name='api-root'),
     
     # API endpoints
+    path('api/security/', include('security.urls', namespace='security')),
     path('api/pricing/', include('pricing.urls', namespace='pricing')),
     path('api/orders/', include('orders.urls', namespace='orders')),
     path('api/payments/', include('payments.urls', namespace='payments')),
