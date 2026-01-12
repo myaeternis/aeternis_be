@@ -133,9 +133,9 @@ class ApiSecurityMiddleware(MiddlewareMixin):
             # Calculate body hash
             body_hash = RequestSigningService.hash_body(request.body)
             
-            # Extract method and path
+            # Extract method and full path (including query string)
             method = request.method
-            path = request.path
+            path = request.get_full_path()  # Includes query string like ?session_id=...
             
             # Validate signature
             try:
