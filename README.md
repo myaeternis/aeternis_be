@@ -4,26 +4,78 @@ Backend Django per il sistema di checkout Aeternis.
 
 ## 🚀 Quick Start
 
-### 1. Configurazione ambiente
+### ⚡ Setup Rapido (Prima Volta)
+
+Esegui il setup completo automatico:
+
+```bash
+./setup.sh
+```
+
+Questo script esegue automaticamente:
+- ✅ Creazione virtual environment
+- ✅ Installazione dipendenze
+- ✅ Configurazione file `.env`
+- ✅ Creazione e applicazione migrazioni
+- ✅ Popolamento dati iniziali (prezzi)
+- ✅ Creazione superuser (opzionale)
+
+### 🏃 Avvio Server (Sempre)
+
+Dopo il setup iniziale, per avviare il server usa:
+
+```bash
+./start.sh
+```
+
+Oppure manualmente:
+
+```bash
+source venv/bin/activate
+export DJANGO_SETTINGS_MODULE=config.settings.local
+python3 manage.py runserver
+```
+
+Il backend sarà disponibile su `http://localhost:8000`
+
+---
+
+## 📋 Setup Manuale (Alternativa)
+
+Se preferisci eseguire i comandi manualmente:
+
+### 1. Setup Iniziale (Solo Prima Volta)
 
 ```bash
 # Crea e attiva virtual environment
 python3 -m venv venv
-source venv/bin/activate  # Linux/Mac
-# oppure
-.\venv\Scripts\activate  # Windows
+source venv/bin/activate
 
 # Installa dipendenze
 pip install -r requirements.txt
+
+# Configura .env (copia da .env.example se necessario)
+cp .env.example .env
+# Modifica .env con le tue chiavi Stripe
+
+# Database e dati iniziali
+python3 manage.py makemigrations
+python3 manage.py migrate
+python3 manage.py seed_pricing
+
+# Crea superuser (opzionale)
+python3 manage.py createsuperuser
 ```
 
-### 2. Configurazione ambiente
-
-Copia `.env.example` in `.env` e configura le variabili:
+### 2. Avvio Server (Sempre)
 
 ```bash
-cp .env.example .env
+source venv/bin/activate
+export DJANGO_SETTINGS_MODULE=config.settings.local
+python3 manage.py runserver
 ```
+
+### 📝 Configurazione .env
 
 Modifica `.env` con le tue chiavi Stripe:
 
@@ -39,30 +91,6 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 # Frontend URL
 FRONTEND_URL=http://localhost:5173
 ```
-
-### 3. Database e dati iniziali
-
-```bash
-# Crea le migrazioni
-python manage.py makemigrations
-
-# Applica le migrazioni
-python manage.py migrate
-
-# Popola i dati dei prezzi
-python manage.py seed_pricing
-
-# Crea superuser per l'admin
-python manage.py createsuperuser
-```
-
-### 4. Avvia il server
-
-```bash
-python manage.py runserver
-```
-
-Il backend sarà disponibile su `http://localhost:8000`
 
 ## 📡 API Endpoints
 
@@ -207,7 +235,7 @@ FRONTEND_URL=https://tuodominio.com
 ### Collectstatic
 
 ```bash
-python manage.py collectstatic --noinput
+python3 manage.py collectstatic --noinput
 ```
 
 ---
